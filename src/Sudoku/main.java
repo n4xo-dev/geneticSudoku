@@ -1,4 +1,4 @@
-package example;
+package Sudoku;
 
 import java.util.StringJoiner;
 
