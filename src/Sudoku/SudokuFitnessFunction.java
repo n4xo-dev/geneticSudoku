@@ -34,13 +34,14 @@ public class SudokuFitnessFunction
    * Determine the fitness of the given Chromosome instance. The higher the
    * return value, the more fit the instance. This method should always
    * return the same fitness value for two equivalent Chromosome instances.
+   * [MODIFIED VERSION FOR SUDOKU]
    *
    * @param a_subject the Chromosome instance to evaluate
    * @return a positive double reflecting the fitness rating of the given
    * Chromosome
    *
-   * @author Klaus Meffert
-   * @since 2.3
+   * @author Klaus Meffert, iLopezosa, pablogodiaz, Dani130301
+   * @version 1.0
    */
   public double evaluate(IChromosome a_subject) {
     // The fitness value measures both how close the value is to the

@@ -7,14 +7,15 @@ import com.qqwing.QQWing;
 public class Sudoku {
 	private int [] puzzle;
 	private int [] solution;
+	private QQWing sudoku;
 	
 	public Sudoku() {
-		QQWing a =  new QQWing();
-		a.generatePuzzle();
-		puzzle = a.getPuzzle();
+		sudoku =  new QQWing();
+		sudoku.generatePuzzle();
+		puzzle = sudoku.getPuzzle();
 		//Get the solution as a string 
-		a.solve();
-		solution = a.getSolution();
+		sudoku.solve();
+		solution = sudoku.getSolution();
 	}
 	
 	public int[] getPuzzle() {
@@ -25,6 +26,9 @@ public class Sudoku {
 		return solution;
 	}
 	
+	public QQWing getSudoku() {
+		return sudoku;
+	}
 	 
 	public String writePuzzle() {
 		StringJoiner str = new StringJoiner(" | ", "[", "]");

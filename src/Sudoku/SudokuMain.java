@@ -16,6 +16,8 @@ import org.jgap.impl.*;
 import org.jgap.xml.*;
 import org.w3c.dom.*;
 
+import com.qqwing.QQWing;
+
 /**
  * This class provides an implementation of the classic sudoku problem
  * using a genetic algorithm.
@@ -25,154 +27,150 @@ import org.w3c.dom.*;
  * @version 1.0
  */
 public class SudokuMain {
-  /**
-   * The total number of times we'll let the population evolve.
-   */
-  private static final int MAX_ALLOWED_EVOLUTIONS = 140;
+	/**
+	 * The total number of times we'll let the population evolve.
+	 */
+	private static final int MAX_ALLOWED_EVOLUTIONS = 140;
 
 
 
-  /**
-   * Executes the genetic algorithm to solve the sudoku. The solution will then
-   * be written to the console.
-   *
-   * @param sudoku The sudoku to be solved, type Sudoku.
-   *
-   * @throws Exception
-   *
-   * @author pablogodiaz, Dani130301, iLopezosa
-   * @version 1.0
-   */
-  public static void solveSudoku(Sudoku sudoku)
-      throws Exception {
-    // Start with a DefaultConfiguration, which comes setup with the
-    // most common settings.
-    // -------------------------------------------------------------
-    Configuration conf = new DefaultConfiguration();
-    conf.setPreservFittestIndividual(true);
-    // Set the fitness function we want to use. We construct it with
-    // the target volume passed in to this method.
-    // ---------------------------------------------------------
-    FitnessFunction myFunc =
-        new SudokuFitnessFunction(sudoku.getPuzzle());
-    conf.setFitnessFunction(myFunc);
-    // Now we need to tell the Configuration object how we want our
-    // Chromosomes to be setup. We do that by actually creating a
-    // sample Chromosome and then setting it on the Configuration
-    // object. As mentioned earlier, we want our Chromosomes to each
-    // have as many genes as there are different items available. We want the
-    // values (alleles) of those genes to be integers, which represent
-    // how many items of that type we have. We therefore use the
-    // IntegerGene class to represent each of the genes. That class
-    // also lets us specify a lower and upper bound, which we set
-    // to senseful values (i.e. maximum possible) for each item type.
-    // --------------------------------------------------------------
-    Gene[] sampleGenes = new Gene[itemVolumes.length];
-    for (int i = 0; i < itemVolumes.length; i++) {
-      sampleGenes[i] = new IntegerGene(conf, 0,
-                                       (int) Math.ceil(a_knapsackVolume /
-          itemVolumes[i]));
-    }
-    IChromosome sampleChromosome = new Chromosome(conf, sampleGenes);
-    conf.setSampleChromosome(sampleChromosome);
-    // Finally, we need to tell the Configuration object how many
-    // Chromosomes we want in our population. The more Chromosomes,
-    // the larger number of potential solutions (which is good for
-    // the population (which could be seen as bad).
-    // ------------------------------------------------------------
-    conf.setPopulationSize(50);
-   // finding the answer), but the longer it will take to evolve
-     // Create random initial population of Chromosomes.
-    // Here we try to read in a previous run via XMLManager.readFile(..)
-    // for demonstration purpose!
-    // -----------------------------------------------------------------
-    Genotype population;
-    try {
-      Document doc = XMLManager.readFile(new File("knapsackJGAP.xml"));
-      population = XMLManager.getGenotypeFromDocument(conf, doc);
-    }
-    catch (FileNotFoundException fex) {
-      population = Genotype.randomInitialGenotype(conf);
-    }
-    population = Genotype.randomInitialGenotype(conf);
-    // Evolve the population. Since we don't know what the best answer
-    // is going to be, we just evolve the max number of times.
-    // ---------------------------------------------------------------
-    for (int i = 0; i < MAX_ALLOWED_EVOLUTIONS; i++) {
-      population.evolve();
-    }
-    // Save progress to file. A new run of this example will then be able to
-    // resume where it stopped before!
-    // ---------------------------------------------------------------------
+	/**
+	 * Executes the genetic algorithm to solve the sudoku. The solution will then
+	 * be written to the console.
+	 * Based on {@link https://github.com/martin-steghoefer/jgap|JGAP library}.
+	 * 
+	 * @param sudoku -> The sudoku to be solved, type Sudoku.
+	 *
+	 * @throws Exception
+	 *
+	 * @author pablogodiaz, Dani130301, iLopezosa
+	 * @version 1.0
+	 * 
+	 */
+	public static void solveSudoku(Sudoku sudoku)
+			throws Exception {
+		// Start with a DefaultConfiguration, which comes setup with the
+		// most common settings.
+		// -------------------------------------------------------------
+		Configuration conf = new DefaultConfiguration();
+		conf.setPreservFittestIndividual(true);
+		// Set the fitness function we want to use. We construct it with
+		// the sudoku passed as an array in to this method.
+		// ---------------------------------------------------------
+		int[] sudokuArr = sudoku.getPuzzle();
+		FitnessFunction myFunc =
+				new SudokuFitnessFunction(sudokuArr);
+		conf.setFitnessFunction(myFunc);
+		// Now we need to tell the Configuration object how we want our
+		// Chromosomes to be setup. We do that by actually creating a
+		// sample Chromosome and then setting it on the Configuration
+		// object. As mentioned earlier, we want our Chromosomes to each
+		// have as many genes as there are empty cells in the sudoku. We want the
+		// values (alleles) of those genes to be integers, which are a number
+		// between 1-9. We therefore use the IntegerGene class to represent each
+		// of the genes. That class also lets us specify a lower and upper bound,
+		// which we set to 1 and 9 for each empty cell.
+		// --------------------------------------------------------------
+		int chromosomeLength = 0;
+		for (int i = 0; i < sudokuArr.length; i++)
+			// If sudokuArr[i] == 0 (empty cell) increase length of chromosome
+			chromosomeLength += (sudokuArr[i] == 0) ? 1 : 0 ; 
 
-    // represent Genotype as tree with elements Chromomes and Genes
-    // ------------------------------------------------------------
-    DataTreeBuilder builder = DataTreeBuilder.getInstance();
-    IDataCreators doc2 = builder.representGenotypeAsDocument(population);
-    // create XML document from generated tree
-    // ---------------------------------------
-    XMLDocumentBuilder docbuilder = new XMLDocumentBuilder();
-    Document xmlDoc = (Document) docbuilder.buildDocument(doc2);
-    XMLManager.writeFile(xmlDoc, new File("knapsackJGAP.xml"));
-    // Display the best solution we found.
-    // -----------------------------------
-    IChromosome bestSolutionSoFar = population.getFittestChromosome();
-    System.out.println("The best solution has a fitness value of " +
-                       bestSolutionSoFar.getFitnessValue());
-    System.out.println("It contained the following: ");
-    int count;
-    double totalVolume = 0.0d;
-    for (int i = 0; i < bestSolutionSoFar.size(); i++) {
-      count = ( (Integer) bestSolutionSoFar.getGene(i).getAllele()).intValue();
-      if (count > 0) {
-        System.out.println("\t " + count + " x " + itemNames[i]);
-        totalVolume += itemVolumes[i] * count;
-      }
-    }
-    System.out.println("\nFor a total volume of " + totalVolume + " ccm");
-    System.out.println("Expected volume was " + a_knapsackVolume + " ccm");
-    System.out.println("Volume difference is " +
-                       Math.abs(totalVolume - a_knapsackVolume) + " ccm");
-  }
+		Gene[] sampleGenes = new Gene[chromosomeLength];
+		for (int i = 0; i < chromosomeLength; i++)
+			sampleGenes[i] = new IntegerGene(conf, 1, 9);
 
-  /**
-   * Main method. A single command-line argument is expected, which is the
-   * volume to create (in other words, 75 would be equal to 75 ccm).
-   *
-   * @param args first and single element in the array = volume of the knapsack
-   * to fill as a double value
-   *
-   * @author Klaus Meffert
-   * @since 2.3
-   */
-  public static void main(String[] args) {
-    if (args.length != 1) {
-      System.out.println("Syntax: " + SudokuMain.class.getName() +
-                         " <volume>");
-    }
-    else {
-      try {
-        double volume = Double.parseDouble(args[0]);
-        if (volume < 1 ||
-            volume >= SudokuFitnessFunction.MAX_BOUND) {
-          System.out.println("The <volume> argument must be between 1 and "
-                             +
-                             (SudokuFitnessFunction.MAX_BOUND - 1)
-                             + " and can be a decimal.");
-        }
-        else {
-          try {
-            findItemsForVolume(volume);
-          }
-          catch (Exception e) {
-            e.printStackTrace();
-          }
-        }
-      }
-      catch (NumberFormatException e) {
-        System.out.println(
-            "The <volume> argument must be a valid double value");
-      }
-    }
-  }
+		IChromosome sampleChromosome = new Chromosome(conf, sampleGenes);
+		conf.setSampleChromosome(sampleChromosome);
+		// Finally, we need to tell the Configuration object how many
+		// Chromosomes we want in our population. The more Chromosomes,
+		// the larger number of potential solutions (which is good for
+		// finding the answer), but the longer it will take to evolve
+		// the population (which could be seen as bad).
+		// ------------------------------------------------------------
+		conf.setPopulationSize(50);
+		// Create random initial population of Chromosomes.
+		Genotype population = Genotype.randomInitialGenotype(conf);
+		// Evolve the population. Until the result obtained is valid or we
+		// surpass the max number of iterations the population keeps evolving.
+		// ---------------------------------------------------------------
+		for (int i = 0; i < MAX_ALLOWED_EVOLUTIONS; i++) {
+			if (resultIsValid(population.getFittestChromosome()))
+				break;
+			population.evolve();
+		}
+		// Save progress to file.
+		// Represent Genotype as tree with elements Chromosomes and Genes.
+		// ------------------------------------------------------------
+		DataTreeBuilder builder = DataTreeBuilder.getInstance();
+		IDataCreators doc2 = builder.representGenotypeAsDocument(population);
+		// create XML document from generated tree
+		// ---------------------------------------
+		XMLDocumentBuilder docbuilder = new XMLDocumentBuilder();
+		Document xmlDoc = (Document) docbuilder.buildDocument(doc2);
+		XMLManager.writeFile(xmlDoc, new File("knapsackJGAP.xml"));
+		// Display the best solution we found.
+		// -----------------------------------
+		IChromosome bestSolutionSoFar = population.getFittestChromosome();
+		QQWing bestSudokuSolution = new QQWing();
+		bestSudokuSolution.setPuzzle(reconstructPuzzle(bestSolutionSoFar, sudokuArr));
+		System.out.println("The best solution has a fitness value of " +
+				bestSolutionSoFar.getFitnessValue());
+		System.out.println("It contained the following: ");
+		bestSudokuSolution.printPuzzle();
+		System.out.println("It was expected: ");
+		sudoku.writeSolution();
+	}
+	
+	/**
+	 * Turns chromosome into sudoku in the form of an int array.
+	 * 
+	 * @param bestSolutionSoFar Chromosome to be converted into array
+	 * @param initPuzzle Initial sudoku from where Chromosome was created
+	 *
+	 * @author iLopezosa
+	 * @version 1.0
+	 * 
+	 */
+	private static int[] reconstructPuzzle(IChromosome bestSolutionSoFar, int[] initPuzzle) {
+		int[] convertedChromosome = new int[initPuzzle.length];
+
+		for(int i = 0; i < initPuzzle.length; i++) 
+			convertedChromosome[i] = (initPuzzle[i] == 0) ? 
+					((Integer) bestSolutionSoFar.getGene(i).getAllele()).intValue() 
+					: initPuzzle[i];
+
+		return convertedChromosome;
+	}
+	
+	/**
+	 * Checks if the best chromosome of a generation is a valid solution to the sudoku.
+	 * 
+	 * @param best Best chromosome from given population
+	 *
+	 * @author iLopezosa
+	 * @version 1.0
+	 * 
+	 */ 
+	private static boolean resultIsValid(IChromosome best) {
+		// If best has MAX_BOUND for fitnessValue return true
+		return (best.getFitnessValue() == 1000000000) ? true : false; 
+	}
+
+	/**
+	 * Main method. Solves random sudoku.
+	 *
+	 * @author iLopezosa, Dani130301, pablogodiaz
+	 * @version 1.0
+	 */
+	public static void main(String[] args) {
+
+		try {
+			solveSudoku(new Sudoku());
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 }
+
