@@ -2,6 +2,8 @@ package Sudoku;
 
 import java.util.StringJoiner;
 
+import org.jgap.IChromosome;
+
 import com.qqwing.QQWing;
 
 public class Sudoku {
@@ -42,5 +44,26 @@ public class Sudoku {
 		for(int sqr : solution)
 				str.add(sqr + "");
 		return str.toString();
+	}
+	
+	/**
+	 * Turns chromosome into sudoku in the form of an int array.
+	 * 
+	 * @param bestSolutionSoFar Chromosome to be converted into array
+	 * @param initPuzzle Initial sudoku from where Chromosome was created
+	 *
+	 * @author iLopezosa
+	 * @version 1.0
+	 * 
+	 */
+	public int[] reconstructPuzzle(IChromosome bestSolutionSoFar) {
+		int[] convertedChromosome = new int[puzzle.length];
+
+		for(int i = 0; i < puzzle.length; i++) 
+			convertedChromosome[i] = (puzzle[i] == 0) ? 
+					((Integer) bestSolutionSoFar.getGene(i).getAllele()).intValue() 
+					: puzzle[i];
+
+		return convertedChromosome;
 	}
 }

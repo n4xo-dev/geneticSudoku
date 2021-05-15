@@ -32,7 +32,7 @@ public class SudokuMain {
 	 */
 	private static final int MAX_ALLOWED_EVOLUTIONS = 140;
 
-
+	public static final int MAX_BOUND = 1000000;
 
 	/**
 	 * Executes the genetic algorithm to solve the sudoku. The solution will then
@@ -59,7 +59,7 @@ public class SudokuMain {
 		// ---------------------------------------------------------
 		int[] sudokuArr = sudoku.getPuzzle();
 		FitnessFunction myFunc =
-				new SudokuFitnessFunction(sudokuArr);
+				new SudokuFitnessFunction(sudoku);
 		conf.setFitnessFunction(myFunc);
 		// Now we need to tell the Configuration object how we want our
 		// Chromosomes to be setup. We do that by actually creating a
@@ -108,12 +108,12 @@ public class SudokuMain {
 		// ---------------------------------------
 		XMLDocumentBuilder docbuilder = new XMLDocumentBuilder();
 		Document xmlDoc = (Document) docbuilder.buildDocument(doc2);
-		XMLManager.writeFile(xmlDoc, new File("knapsackJGAP.xml"));
+		XMLManager.writeFile(xmlDoc, new File("sudoku.xml"));
 		// Display the best solution we found.
 		// -----------------------------------
 		IChromosome bestSolutionSoFar = population.getFittestChromosome();
 		QQWing bestSudokuSolution = new QQWing();
-		bestSudokuSolution.setPuzzle(reconstructPuzzle(bestSolutionSoFar, sudokuArr));
+		bestSudokuSolution.setPuzzle(sudoku.reconstructPuzzle(bestSolutionSoFar));
 		System.out.println("The best solution has a fitness value of " +
 				bestSolutionSoFar.getFitnessValue());
 		System.out.println("It contained the following: ");
@@ -132,16 +132,16 @@ public class SudokuMain {
 	 * @version 1.0
 	 * 
 	 */
-	private static int[] reconstructPuzzle(IChromosome bestSolutionSoFar, int[] initPuzzle) {
-		int[] convertedChromosome = new int[initPuzzle.length];
-
-		for(int i = 0; i < initPuzzle.length; i++) 
-			convertedChromosome[i] = (initPuzzle[i] == 0) ? 
-					((Integer) bestSolutionSoFar.getGene(i).getAllele()).intValue() 
-					: initPuzzle[i];
-
-		return convertedChromosome;
-	}
+//	private static int[] reconstructPuzzle(IChromosome bestSolutionSoFar, int[] initPuzzle) {
+//		int[] convertedChromosome = new int[initPuzzle.length];
+//
+//		for(int i = 0; i < initPuzzle.length; i++) 
+//			convertedChromosome[i] = (initPuzzle[i] == 0) ? 
+//					((Integer) bestSolutionSoFar.getGene(i).getAllele()).intValue() 
+//					: initPuzzle[i];
+//
+//		return convertedChromosome;
+//	}
 	
 	/**
 	 * Checks if the best chromosome of a generation is a valid solution to the sudoku.
@@ -154,7 +154,7 @@ public class SudokuMain {
 	 */ 
 	private static boolean resultIsValid(IChromosome best) {
 		// If best has MAX_BOUND for fitnessValue return true
-		return (best.getFitnessValue() == 1000000000) ? true : false; 
+		return (best.getFitnessValue() == MAX_BOUND) ? true : false; 
 	}
 
 	/**
@@ -171,6 +171,7 @@ public class SudokuMain {
 		catch (Exception e) {
 			e.printStackTrace();
 		}
+		
 	}
 }
 
