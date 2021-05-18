@@ -74,7 +74,7 @@ public class SudokuMain {
 		int chromosomeLength = 0;
 		for (int i = 0; i < sudokuArr.length; i++)
 			// If sudokuArr[i] == 0 (empty cell) increase length of chromosome
-			chromosomeLength += (sudokuArr[i] == 0) ? 1 : 0 ; 
+			chromosomeLength += (sudokuArr[i] == 0) ? 1 : 0 ;
 
 		Gene[] sampleGenes = new Gene[chromosomeLength];
 		for (int i = 0; i < chromosomeLength; i++)

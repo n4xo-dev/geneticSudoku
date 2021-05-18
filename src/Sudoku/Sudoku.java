@@ -52,17 +52,18 @@ public class Sudoku {
 	 * @param bestSolutionSoFar Chromosome to be converted into array
 	 * @param initPuzzle Initial sudoku from where Chromosome was created
 	 *
-	 * @author iLopezosa
+	 * @author iLopezosa, pablogodiaz, Dani130301
 	 * @version 1.0
 	 * 
 	 */
 	public int[] reconstructPuzzle(IChromosome bestSolutionSoFar) {
 		int[] convertedChromosome = new int[puzzle.length];
-
-		for(int i = 0; i < puzzle.length; i++) 
+		int j = 0;
+		for(int i = 0; i < puzzle.length; i++) {
 			convertedChromosome[i] = (puzzle[i] == 0) ? 
-					((Integer) bestSolutionSoFar.getGene(i).getAllele()).intValue() 
+					((Integer) bestSolutionSoFar.getGene(j++).getAllele()).intValue() 
 					: puzzle[i];
+		}
 
 		return convertedChromosome;
 	}

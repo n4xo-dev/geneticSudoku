@@ -85,13 +85,18 @@ extends FitnessFunction {
 		else {
 			// we arbitrarily work with half of the maximum fitness as basis for non-
 			// optimal solutions (concerning volume difference)
-			// 373.248 max penalty value for 72 empty cells
-			return a_maxFitness / 2 - (penalty * penalty * penalty);  
+			// 466560 max penalty value for 72 empty cells
+			return a_maxFitness / 2 - (penalty * penalty * 10);
 		}
 	}
 	
-	private int [] substr (int initial, int end){
-		return 0; //TODO
+	private int [] extractRows (int initial, int end, int[] full){
+		int[] res = new int[end - initial];
+		
+		for(int i = 0; i < res.length; i++)
+			res[i] = full[i+initial];
+		
+		return res; //TODO
 	}
 	
 	protected double getPenalty(IChromosome a_subject){
@@ -109,12 +114,36 @@ extends FitnessFunction {
 		
 		
 		for(int i = 0; i < sideSize; i++) {
-			row[i] = substr(i,i*size);
+			rows[i] = extractRows(i,i*sideSize, fullSudoku);
+			columns[i] = extractColumns(i,sideSize,fullSudoku);
+			blocks[i] = extractBlocks(i,sideSize,fullSudoku);
 			
 			//TODO substring function for int[]
 		}
 		
 		
 	return 0; //TODO
+	}
+
+	private int[] extractBlocks(int i, int sideSize, int[] fullSudoku) {
+		int[] res = new int[sideSize];
+		int sqr_sideSize = (int) Math.floor(Math.sqrt(sideSize));
+		int k = 1;
+		
+		for(int j = 0; j < sideSize; j++) {
+			k = (j%sqr_sideSize == 0) ? j : k;
+			res[j] = fullSudoku[(j*sideSize + sqr_sideSize*i) * k];
+		}
+		
+		return null;
+	}
+
+	private int[] extractColumns(int i, int sideSize, int[] fullSudoku) {
+		int res[] = new int[sideSize];
+		
+		for(int j = 0; j < sideSize; j++)
+			res[j] = fullSudoku[j * (i+1) * sideSize - 1];
+		
+		return res;
 	}
 }
