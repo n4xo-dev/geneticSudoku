@@ -20,6 +20,14 @@ public class Sudoku {
 		solution = sudoku.getSolution();
 	}
 	
+	public Sudoku(QQWing sudoku) {
+		this.sudoku = sudoku;
+		puzzle = sudoku.getPuzzle();
+		//Get the solution as a string 
+		sudoku.solve();
+		solution = sudoku.getSolution();
+	}
+	
 	public int[] getPuzzle() {
 		return puzzle;
 	}

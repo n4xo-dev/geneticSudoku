@@ -22,15 +22,18 @@ import com.qqwing.QQWing;
 public class SudokuFitnessFunction
 extends FitnessFunction {
 
-	private final int[] sudoku_init;
-	private final Sudoku sudoku;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 6451194810997798868L;
 
-	public static final int MAX_BOUND = 1000000;
+	final Sudoku sudoku;
+
+	public static final int MAX_BOUND = 20000000;
 
 	//private static final double ZERO_DIFFERENCE_FITNESS = Math.sqrt(MAX_BOUND); // What is this?
 
 	public SudokuFitnessFunction(Sudoku sudoku) {
-		sudoku_init = sudoku.getPuzzle();
 		this.sudoku = sudoku;
 	}
 
@@ -78,7 +81,7 @@ extends FitnessFunction {
 	 * @author Klaus Meffert
 	 * @since 2.3
 	 */
-	protected double getFitness(double a_maxFitness, double penalty) {
+	double getFitness(double a_maxFitness, double penalty) {
 		if (penalty == 0) {
 			return a_maxFitness;
 		}
@@ -86,20 +89,13 @@ extends FitnessFunction {
 			// we arbitrarily work with half of the maximum fitness as basis for non-
 			// optimal solutions (concerning volume difference)
 			// 466560 max penalty value for 72 empty cells
+			//System.out.println("Fitness: " + (a_maxFitness / 2 - (penalty * penalty * 10)));
 			return a_maxFitness / 2 - (penalty * penalty * 10);
 		}
 	}
 	
-	private int [] extractRows (int initial, int end, int[] full){
-		int[] res = new int[end - initial];
-		
-		for(int i = 0; i < res.length; i++)
-			res[i] = full[i+initial];
-		
-		return res; //TODO
-	}
 	
-	protected double getPenalty(IChromosome a_subject){
+	double getPenalty(IChromosome a_subject){
 		// We iterate the array of cells and search for errors, if there is a double or tripe error, there is a penalty
 		int errorCounter = 0;
 		double penalty = 0.0d;
@@ -114,36 +110,116 @@ extends FitnessFunction {
 		
 		
 		for(int i = 0; i < sideSize; i++) {
-			rows[i] = extractRows(i,i*sideSize, fullSudoku);
-			columns[i] = extractColumns(i,sideSize,fullSudoku);
-			blocks[i] = extractBlocks(i,sideSize,fullSudoku);
 			
-			//TODO substring function for int[]
+			rows[i] = extractRows(i*sideSize, i*sideSize+sideSize-1, fullSudoku);
+			//System.out.println("rows[i].length: " + rows[i].length);
+			//TODO
+			rows[i] = quickSort( rows[i], 0, rows[i].length - 1);
+			errorCounter += countErrors(rows[i]);
+			
+			columns[i] = extractColumns(i, sideSize, fullSudoku);
+			columns[i] = quickSort( columns[i], 0, columns[i].length - 1);
+			errorCounter += countErrors(columns[i]);
+			
+			blocks[i] = extractBlocks(i, sideSize, fullSudoku);
+			blocks[i] = quickSort( blocks[i], 0, blocks[i].length - 1);
+			errorCounter += countErrors(blocks[i]);
 		}
 		
-		
-	return 0; //TODO
+		penalty = (double) errorCounter;
+		System.out.println("Penalty: " + penalty);
+		return penalty;
 	}
-
-	private int[] extractBlocks(int i, int sideSize, int[] fullSudoku) {
-		int[] res = new int[sideSize];
-		int sqr_sideSize = (int) Math.floor(Math.sqrt(sideSize));
-		int k = 1;
-		
-		for(int j = 0; j < sideSize; j++) {
-			k = (j%sqr_sideSize == 0) ? j : k;
-			res[j] = fullSudoku[(j*sideSize + sqr_sideSize*i) * k];
+	
+	/** 
+	 * @author Dani130301
+	 * */
+	int countErrors(int A[]){
+		int error=0;
+		int current = A[0];
+		for(int i=1; i<A.length; i++){
+			if(A[i]==current){
+				error++;
+			} else {current = A[i];}
 		}
-		
-		return null;
+		return error;
 	}
 
-	private int[] extractColumns(int i, int sideSize, int[] fullSudoku) {
-		int res[] = new int[sideSize];
-		
-		for(int j = 0; j < sideSize; j++)
-			res[j] = fullSudoku[j * (i+1) * sideSize - 1];
+	int [] extractRows (int initial, int end, int[] fullSudoku){
+		int[] res = new int[end - initial + 1];
+		//System.out.println("ROW LENGTH: " + res.length);
+		for(int i = 0; i < res.length; i++) {
+			//System.out.println(i + initial);
+			res[i] = fullSudoku[i+initial];
+		}
 		
 		return res;
 	}
+
+
+	int[] extractColumns(int i, int sideSize, int[] fullSudoku) {
+		int res[] = new int[sideSize];
+		
+		for(int j = 0; j < sideSize; j++) {
+			//System.out.println(( j * sideSize + i));
+			res[j] = fullSudoku[j * sideSize + i];
+		}
+		
+		return res;
+	}
+	
+	int[] extractBlocks(int i, int sideSize, int[] fullSudoku) {
+		int[] res = new int[sideSize];
+		int sqr_sideSize = (int) Math.floor(Math.sqrt(sideSize));
+		int k = 1;
+		int[][] aux = new int[sqr_sideSize][sqr_sideSize];
+		
+		//Extract rows from block
+		for(int j = 0; j < sqr_sideSize; j++) {
+			k = (i+1 % sqr_sideSize == 0) ? i+1 : k;
+			int init = (j*sideSize + sqr_sideSize*i) * k;
+			//System.out.println("INIT Block row: " + init + " k: " + k);
+			aux[j] = extractRows(init, init + sqr_sideSize - 1, fullSudoku);	
+		}
+		
+		k=0;
+		//Join rows to form block
+		for(int j = 0; j < sqr_sideSize; j++) {
+			for(int l = 0; l < sqr_sideSize; l++) {
+				res[k] = aux[j][l];
+				k++;
+			}
+		}
+		
+		return res;
+	}
+	
+	
+	private static int[] quickSort(int A[], int L, int R) {
+
+		  int pivot=A[L];
+		  int i=L;
+		  int j=R;
+		  int aux;
+		 
+		  while(i < j){
+		     while(A[i] <= pivot && i < j) i++;
+		     while(A[j] > pivot) j--;
+		     if (i < j) {
+		         aux= A[i];
+		         A[i]=A[j];
+		         A[j]=aux;
+		     }
+		   }
+		   
+		   A[L]=A[j];
+		   A[j]=pivot;
+		   
+		   if(L < j-1)
+		     A = quickSort(A,L,j-1);
+		   if(j+1 < R)
+		     A = quickSort(A,j+1,R);
+		   
+		   return A;
+		}
 }

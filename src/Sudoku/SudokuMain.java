@@ -30,9 +30,9 @@ public class SudokuMain {
 	/**
 	 * The total number of times we'll let the population evolve.
 	 */
-	private static final int MAX_ALLOWED_EVOLUTIONS = 140;
+	private static final int MAX_ALLOWED_EVOLUTIONS = 1400;
 
-	public static final int MAX_BOUND = 1000000;
+	public static final int MAX_BOUND = 20000000;
 
 	/**
 	 * Executes the genetic algorithm to solve the sudoku. The solution will then
@@ -98,6 +98,7 @@ public class SudokuMain {
 			if (resultIsValid(population.getFittestChromosome()))
 				break;
 			population.evolve();
+			//System.out.println(population.getFittestChromosome().getFitnessValue());
 		}
 		// Save progress to file.
 		// Represent Genotype as tree with elements Chromosomes and Genes.
@@ -119,7 +120,7 @@ public class SudokuMain {
 		System.out.println("It contained the following: ");
 		bestSudokuSolution.printPuzzle();
 		System.out.println("It was expected: ");
-		sudoku.writeSolution();
+		sudoku.getSudoku().printSolution();
 	}
 	
 	/**
@@ -154,7 +155,7 @@ public class SudokuMain {
 	 */ 
 	private static boolean resultIsValid(IChromosome best) {
 		// If best has MAX_BOUND for fitnessValue return true
-		return (best.getFitnessValue() == MAX_BOUND) ? true : false; 
+		return (best.getFitnessValue() >= MAX_BOUND) ? true : false; 
 	}
 
 	/**
