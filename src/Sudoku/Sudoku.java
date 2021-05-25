@@ -63,6 +63,8 @@ public class Sudoku {
 	 * @author iLopezosa, pablogodiaz, Dani130301
 	 * @version 1.0
 	 * 
+	 * @return int[] convertedChromosome
+	 * 
 	 */
 	public int[] reconstructPuzzle(IChromosome bestSolutionSoFar) {
 		int[] convertedChromosome = new int[puzzle.length];

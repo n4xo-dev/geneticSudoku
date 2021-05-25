@@ -30,7 +30,7 @@ public class SudokuMain {
 	/**
 	 * The total number of times we'll let the population evolve.
 	 */
-	private static final int MAX_ALLOWED_EVOLUTIONS = 1400;
+	private static final int MAX_ALLOWED_EVOLUTIONS = 140000;
 
 	public static final int MAX_BOUND = 20000000;
 
@@ -98,7 +98,6 @@ public class SudokuMain {
 			if (resultIsValid(population.getFittestChromosome()))
 				break;
 			population.evolve();
-			//System.out.println(population.getFittestChromosome().getFitnessValue());
 		}
 		// Save progress to file.
 		// Represent Genotype as tree with elements Chromosomes and Genes.
@@ -122,27 +121,6 @@ public class SudokuMain {
 		System.out.println("It was expected: ");
 		sudoku.getSudoku().printSolution();
 	}
-	
-	/**
-	 * Turns chromosome into sudoku in the form of an int array.
-	 * 
-	 * @param bestSolutionSoFar Chromosome to be converted into array
-	 * @param initPuzzle Initial sudoku from where Chromosome was created
-	 *
-	 * @author iLopezosa
-	 * @version 1.0
-	 * 
-	 */
-//	private static int[] reconstructPuzzle(IChromosome bestSolutionSoFar, int[] initPuzzle) {
-//		int[] convertedChromosome = new int[initPuzzle.length];
-//
-//		for(int i = 0; i < initPuzzle.length; i++) 
-//			convertedChromosome[i] = (initPuzzle[i] == 0) ? 
-//					((Integer) bestSolutionSoFar.getGene(i).getAllele()).intValue() 
-//					: initPuzzle[i];
-//
-//		return convertedChromosome;
-//	}
 	
 	/**
 	 * Checks if the best chromosome of a generation is a valid solution to the sudoku.

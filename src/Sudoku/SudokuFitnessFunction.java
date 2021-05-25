@@ -89,7 +89,6 @@ extends FitnessFunction {
 			// we arbitrarily work with half of the maximum fitness as basis for non-
 			// optimal solutions (concerning volume difference)
 			// 466560 max penalty value for 72 empty cells
-			//System.out.println("Fitness: " + (a_maxFitness / 2 - (penalty * penalty * 10)));
 			return a_maxFitness / 2 - (penalty * penalty * 10);
 		}
 	}
@@ -110,10 +109,8 @@ extends FitnessFunction {
 		
 		
 		for(int i = 0; i < sideSize; i++) {
-			
+			//System.out.println("> Entering extractRows");
 			rows[i] = extractRows(i*sideSize, i*sideSize+sideSize-1, fullSudoku);
-			//System.out.println("rows[i].length: " + rows[i].length);
-			//TODO
 			rows[i] = quickSort( rows[i], 0, rows[i].length - 1);
 			errorCounter += countErrors(rows[i]);
 			
@@ -127,7 +124,7 @@ extends FitnessFunction {
 		}
 		
 		penalty = (double) errorCounter;
-		System.out.println("Penalty: " + penalty);
+
 		return penalty;
 	}
 	
@@ -147,12 +144,9 @@ extends FitnessFunction {
 
 	int [] extractRows (int initial, int end, int[] fullSudoku){
 		int[] res = new int[end - initial + 1];
-		//System.out.println("ROW LENGTH: " + res.length);
 		for(int i = 0; i < res.length; i++) {
-			//System.out.println(i + initial);
 			res[i] = fullSudoku[i+initial];
 		}
-		
 		return res;
 	}
 
@@ -161,7 +155,6 @@ extends FitnessFunction {
 		int res[] = new int[sideSize];
 		
 		for(int j = 0; j < sideSize; j++) {
-			//System.out.println(( j * sideSize + i));
 			res[j] = fullSudoku[j * sideSize + i];
 		}
 		
@@ -171,14 +164,13 @@ extends FitnessFunction {
 	int[] extractBlocks(int i, int sideSize, int[] fullSudoku) {
 		int[] res = new int[sideSize];
 		int sqr_sideSize = (int) Math.floor(Math.sqrt(sideSize));
-		int k = 1;
+		int k = (i >= sqr_sideSize) ? (sideSize*2) : 0; // 2nd row of blocks init
+		k = (i >= (2*sqr_sideSize)) ? (k*2) : k; // 3rd row of blocks init
 		int[][] aux = new int[sqr_sideSize][sqr_sideSize];
 		
 		//Extract rows from block
 		for(int j = 0; j < sqr_sideSize; j++) {
-			k = (i+1 % sqr_sideSize == 0) ? i+1 : k;
-			int init = (j*sideSize + sqr_sideSize*i) * k;
-			//System.out.println("INIT Block row: " + init + " k: " + k);
+			int init = j*sideSize + sqr_sideSize*i + k;
 			aux[j] = extractRows(init, init + sqr_sideSize - 1, fullSudoku);	
 		}
 		
