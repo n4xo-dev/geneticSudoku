@@ -9,12 +9,12 @@
  */
 package Sudoku;
 
-import java.io.*;
+
+import java.util.ArrayList;
+import java.util.Vector;
+
 import org.jgap.*;
-import org.jgap.data.*;
 import org.jgap.impl.*;
-import org.jgap.xml.*;
-import org.w3c.dom.*;
 
 import com.qqwing.QQWing;
 
@@ -30,7 +30,7 @@ public class SudokuMain {
 	/**
 	 * The total number of times we'll let the population evolve.
 	 */
-	private static final int MAX_ALLOWED_EVOLUTIONS = 140000;
+	private static final int MAX_ALLOWED_EVOLUTIONS = 1000;
 
 	public static final int MAX_BOUND = 20000000;
 
@@ -61,6 +61,7 @@ public class SudokuMain {
 		FitnessFunction myFunc =
 				new SudokuFitnessFunction(sudoku);
 		conf.setFitnessFunction(myFunc);
+		sudoku.getSudoku();
 		// Now we need to tell the Configuration object how we want our
 		// Chromosomes to be setup. We do that by actually creating a
 		// sample Chromosome and then setting it on the Configuration
@@ -71,17 +72,19 @@ public class SudokuMain {
 		// of the genes. That class also lets us specify a lower and upper bound,
 		// which we set to 1 and 9 for each empty cell.
 		// --------------------------------------------------------------
-		int chromosomeLength = 0;
-		for (int i = 0; i < sudokuArr.length; i++)
-			// If sudokuArr[i] == 0 (empty cell) increase length of chromosome
-			chromosomeLength += (sudokuArr[i] == 0) ? 1 : 0 ;
-
+		int chromosomeLength = (int) Math.sqrt(QQWing.BOARD_SIZE);
+		
 		Gene[] sampleGenes = new Gene[chromosomeLength];
-		for (int i = 0; i < chromosomeLength; i++)
-			sampleGenes[i] = new IntegerGene(conf, 1, 9);
-
+		for (int i = 0; i < chromosomeLength; i++) {
+			sampleGenes[i] = new CompositeGene(conf, new IntegerGene(conf, 1, 9));
+			for(int j = 0; j < chromosomeLength; j++) {
+				if(sudokuArr[j] == 0)
+					((CompositeGene) sampleGenes[i]).addGene(new IntegerGene(conf, 1, 9), false);
+			}
+		}
 		IChromosome sampleChromosome = new Chromosome(conf, sampleGenes);
 		conf.setSampleChromosome(sampleChromosome);
+
 		// Finally, we need to tell the Configuration object how many
 		// Chromosomes we want in our population. The more Chromosomes,
 		// the larger number of potential solutions (which is good for
@@ -89,8 +92,44 @@ public class SudokuMain {
 		// the population (which could be seen as bad).
 		// ------------------------------------------------------------
 		conf.setPopulationSize(50);
+		
+		//Initialize rows 
+		IChromosome[] initialArray = new Chromosome[50];
+		int[][] matrixSudoku = sudoku.reconstructPuzzle();
+		ArrayList<Integer> initNums = new ArrayList<>();
+		for(int i = 1; i < 10; i++)
+			initNums.add(Integer.valueOf(i));
+		for(int i = 0; i < 50; i++) {			
+			IChromosome initial = new Chromosome(conf,sampleGenes);
+		
+			Gene[] rowsSolution = new Gene[chromosomeLength];
+			for(int j=0;j < chromosomeLength;j++){
+				ArrayList<Integer> nums = initNums;
+				Vector<Integer> rowGenes = new Vector<>();
+				for(int k = 0; k < chromosomeLength; k++) {
+					if(nums.contains(matrixSudoku[j][k]))
+						nums.remove(nums.indexOf(matrixSudoku[j][k]));
+				}
+				System.out.println("nums.size:"+nums.size());
+				int l = 0;
+				for(int k = 0; k < chromosomeLength; k++) {
+					if(matrixSudoku[j][k] == 0) {
+						rowGenes.add(nums.get(l++));
+						System.out.println("matrixSudoku["+j+"]["+k+"]:"+matrixSudoku[j][k]+" == 0?");
+					}
+				}
+				rowsSolution[j] = new CompositeGene(conf, new IntegerGene(conf, 1, 9));
+				System.out.println("XXXXXXX");
+				rowsSolution[j].setAllele(rowGenes);
+			}
+			
+			initial.setGenes(rowsSolution);
+			initialArray[i] = initial;
+		}
+		
+		Genotype population = new Genotype(conf, new Population(conf, initialArray));
+
 		// Create random initial population of Chromosomes.
-		Genotype population = Genotype.randomInitialGenotype(conf);
 		// Evolve the population. Until the result obtained is valid or we
 		// surpass the max number of iterations the population keeps evolving.
 		// ---------------------------------------------------------------
@@ -99,21 +138,11 @@ public class SudokuMain {
 				break;
 			population.evolve();
 		}
-		// Save progress to file.
-		// Represent Genotype as tree with elements Chromosomes and Genes.
-		// ------------------------------------------------------------
-		DataTreeBuilder builder = DataTreeBuilder.getInstance();
-		IDataCreators doc2 = builder.representGenotypeAsDocument(population);
-		// create XML document from generated tree
-		// ---------------------------------------
-		XMLDocumentBuilder docbuilder = new XMLDocumentBuilder();
-		Document xmlDoc = (Document) docbuilder.buildDocument(doc2);
-		XMLManager.writeFile(xmlDoc, new File("sudoku.xml"));
 		// Display the best solution we found.
 		// -----------------------------------
 		IChromosome bestSolutionSoFar = population.getFittestChromosome();
 		QQWing bestSudokuSolution = new QQWing();
-		bestSudokuSolution.setPuzzle(sudoku.reconstructPuzzle(bestSolutionSoFar));
+		bestSudokuSolution.setPuzzle(sudoku.reconstructSudokuArr(sudoku.reconstructPuzzle(bestSolutionSoFar)));
 		System.out.println("The best solution has a fitness value of " +
 				bestSolutionSoFar.getFitnessValue());
 		System.out.println("It contained the following: ");

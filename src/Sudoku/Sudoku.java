@@ -1,6 +1,7 @@
 package Sudoku;
 
 import java.util.StringJoiner;
+import java.util.Vector;
 
 import org.jgap.IChromosome;
 
@@ -54,6 +55,20 @@ public class Sudoku {
 		return str.toString();
 	}
 	
+	public int[][] reconstructPuzzle() {
+		int sqrLength = (int) Math.sqrt(QQWing.BOARD_SIZE);
+		int[][] convertedChromosome = new int[sqrLength][sqrLength];
+		int l = 0;
+		for(int i = 0; i < sqrLength; i++) {
+			for(int j = 0; j < sqrLength; j++) {
+				convertedChromosome[i][j] = puzzle[l];
+				l++;
+			}
+		}
+
+		return convertedChromosome;
+	}
+	
 	/**
 	 * Turns chromosome into sudoku in the form of an int array.
 	 * 
@@ -66,15 +81,34 @@ public class Sudoku {
 	 * @return int[] convertedChromosome
 	 * 
 	 */
-	public int[] reconstructPuzzle(IChromosome bestSolutionSoFar) {
-		int[] convertedChromosome = new int[puzzle.length];
-		int j = 0;
-		for(int i = 0; i < puzzle.length; i++) {
-			convertedChromosome[i] = (puzzle[i] == 0) ? 
-					((Integer) bestSolutionSoFar.getGene(j++).getAllele()).intValue() 
-					: puzzle[i];
+	@SuppressWarnings("unchecked")
+	public int[][] reconstructPuzzle(IChromosome bestSolutionSoFar) {
+		int sqrLength = (int) Math.sqrt(QQWing.BOARD_SIZE);
+		int[][] convertedChromosome = new int[sqrLength][sqrLength];
+		int l = 0;
+		for(int i = 0; i < sqrLength; i++) {
+			int k = 0;
+			for(int j = 0; j < sqrLength; j++) {
+				convertedChromosome[i][j] = (puzzle[l] == 0) ? 
+						 ((Vector<Integer>) bestSolutionSoFar.getGene(i).getAllele()).get(k++).intValue()  
+						: puzzle[l];
+				l++;
+			}
 		}
 
 		return convertedChromosome;
+	}
+	
+	public int[] reconstructSudokuArr(int[][] sudoku){
+		int res[] = new int[QQWing.BOARD_SIZE];
+		int length = sudoku[0].length;
+		int k=0;
+		for (int i=0;i < length; i++){
+			for(int j=0; j < length; j++){
+				res[k] =  sudoku[i][j];
+				k++;
+			}
+		}
+		return res;
 	}
 }
