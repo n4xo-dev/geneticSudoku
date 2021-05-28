@@ -11,9 +11,13 @@ package Sudoku;
 
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Vector;
 
 import org.jgap.*;
+import org.jgap.event.EventManager;
 import org.jgap.impl.*;
 
 import com.qqwing.QQWing;
@@ -52,7 +56,7 @@ public class SudokuMain {
 		// Start with a DefaultConfiguration, which comes setup with the
 		// most common settings.
 		// -------------------------------------------------------------
-		Configuration conf = new DefaultConfiguration();
+		Configuration conf = new Configuration();
 		conf.setPreservFittestIndividual(true);
 		// Set the fitness function we want to use. We construct it with
 		// the sudoku passed as an array in to this method.
@@ -61,6 +65,32 @@ public class SudokuMain {
 		FitnessFunction myFunc =
 				new SudokuFitnessFunction(sudoku);
 		conf.setFitnessFunction(myFunc);
+
+
+		try {
+			conf.setBreeder(new GABreeder());
+			conf.setRandomGenerator(new StockRandomGenerator());
+			conf.setEventManager(new EventManager());
+			BestChromosomesSelector bestChromsSelector = new BestChromosomesSelector(conf, 0.90d);
+			bestChromsSelector.setDoubletteChromosomesAllowed(true);
+			conf.addNaturalSelector(bestChromsSelector, false);
+			conf.setMinimumPopSizePercent(0);
+			conf.setSelectFromPrevGen(1.0d);
+			conf.setKeepPopulationSizeConstant(true);
+			conf.setFitnessEvaluator(new DefaultFitnessEvaluator());
+			conf.setChromosomePool(new ChromosomePool());
+
+			conf.addGeneticOperator(new SudokuCrossoverOperator(conf));	
+			conf.addGeneticOperator(new MutationOperator(conf, 0));
+		}
+		catch (InvalidConfigurationException e) {
+			throw new RuntimeException(
+					"Fatal error: DefaultConfiguration class could not use its "
+							+ "own stock configuration values. This should never happen. "
+							+ "Please report this as a bug to the JGAP team.");
+		}
+
+
 		sudoku.getSudoku();
 		// Now we need to tell the Configuration object how we want our
 		// Chromosomes to be setup. We do that by actually creating a
@@ -99,36 +129,50 @@ public class SudokuMain {
 		ArrayList<Integer> initNums = new ArrayList<>();
 		for(int i = 1; i < 10; i++)
 			initNums.add(Integer.valueOf(i));
-		for(int i = 0; i < 50; i++) {			
-			IChromosome initial = new Chromosome(conf,sampleGenes);
 		
-			Gene[] rowsSolution = new Gene[chromosomeLength];
-			for(int j=0;j < chromosomeLength;j++){
-				ArrayList<Integer> nums = initNums;
-				Vector<Integer> rowGenes = new Vector<>();
-				for(int k = 0; k < chromosomeLength; k++) {
-					if(nums.contains(matrixSudoku[j][k]))
-						nums.remove(nums.indexOf(matrixSudoku[j][k]));
-				}
-				System.out.println("nums.size:"+nums.size());
-				int l = 0;
-				for(int k = 0; k < chromosomeLength; k++) {
-					if(matrixSudoku[j][k] == 0) {
-						rowGenes.add(nums.get(l++));
-						System.out.println("matrixSudoku["+j+"]["+k+"]:"+matrixSudoku[j][k]+" == 0?");
-					}
-				}
-				rowsSolution[j] = new CompositeGene(conf, new IntegerGene(conf, 1, 9));
-				System.out.println("XXXXXXX");
-				rowsSolution[j].setAllele(rowGenes);
-			}
+		// Initial correct chromosome
+		List<?>[] initialRowValue = new List[chromosomeLength];
+		IChromosome intermediaryChromosome = new Chromosome(conf,sampleGenes);
+		Gene[] rows = new Gene[chromosomeLength];
+		for(int j=0;j < chromosomeLength;j++){
+			ArrayList<Integer> nums = new ArrayList<>(initNums);
+			List<Integer> rowGenes = new Vector<>();
 			
-			initial.setGenes(rowsSolution);
-			initialArray[i] = initial;
+			for(int k = 0; k < chromosomeLength; k++) 
+				if(nums.contains(matrixSudoku[j][k]))
+					nums.remove(nums.indexOf(matrixSudoku[j][k]));
+			
+			int l = 0;
+			for(int k = 0; k < chromosomeLength; k++)
+				if(matrixSudoku[j][k] == 0)
+					rowGenes.add(nums.get(l++));
+			
+			rows[j] = new CompositeGene(conf, new IntegerGene(conf, 1, 9));
+			for(int k = 0; k < nums.size(); k++) 
+				((CompositeGene) rows[j]).addGene(new IntegerGene(conf, 1, 9));
+			
+			rows[j].setAllele(rowGenes);
+			// Save rowGenes for later
+			initialRowValue[j] = new Vector<Integer>(rowGenes);
 		}
 		
+		intermediaryChromosome.setGenes(rows);
+		initialArray[0] = intermediaryChromosome;
+		
+		// Permutations
+		for(int i = 1; i < 50; i++) {
+			for(int j = 0; j < chromosomeLength; j++) {
+				Collections.shuffle(initialRowValue[j]);
+				rows[j].setAllele(initialRowValue[j]);
+			}
+			intermediaryChromosome.setGenes(rows);
+			initialArray[i] = (IChromosome) intermediaryChromosome.clone();	
+			
+		}
+		
+		System.out.println(Arrays.toString(conf.getGeneticOperators().toArray()));
 		Genotype population = new Genotype(conf, new Population(conf, initialArray));
-
+		
 		// Create random initial population of Chromosomes.
 		// Evolve the population. Until the result obtained is valid or we
 		// surpass the max number of iterations the population keeps evolving.

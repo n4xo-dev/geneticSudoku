@@ -9,6 +9,8 @@
  */
 package Sudoku;
 
+import java.util.Arrays;
+
 import org.jgap.*;
 
 import com.qqwing.QQWing;
@@ -111,18 +113,24 @@ extends FitnessFunction {
 			//System.out.println("> Entering extractRows");
 			rows[i] = quickSort( rows[i], 0, rows[i].length - 1);
 			errorCounter += countErrors(rows[i]);
+			System.out.println("R:"+countErrors(rows[i]));
 			
-			columns[i] = extractColumns(i, sideSize, rows); 
-			columns[i] = quickSort( columns[i], 0, columns[i].length - 1); 
+			columns[i] = extractColumns(i, sideSize, rows);
+			System.out.println("<"+Arrays.toString(columns[i]));
+			columns[i] = quickSort( columns[i], 0, columns[i].length - 1);
+			System.out.println(">"+Arrays.toString(columns[i]));
 			errorCounter += countErrors(columns[i]); 
+			System.out.println("C:"+countErrors(columns[i]));
 			
 			blocks[i] = extractBlocks(i, sideSize, rows);
+			System.out.println("<"+Arrays.toString(blocks[i]));
 			blocks[i] = quickSort( blocks[i], 0, blocks[i].length - 1);
+			System.out.println(">"+Arrays.toString(blocks[i]));
 			errorCounter += countErrors(blocks[i]);
+			System.out.println("B:"+countErrors(blocks[i]));
 		}
-		
+		System.out.println("\tT:"+errorCounter);
 		penalty = (double) errorCounter;
-
 		return penalty;
 	}
 	
