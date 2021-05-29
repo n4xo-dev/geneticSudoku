@@ -108,6 +108,8 @@ extends FitnessFunction {
 		int[][] columns = new int[sideSize][sideSize];
 		int[][] blocks  = new int[sideSize][sideSize];
 		
+		int [][] aux = rows.clone();
+		
 		
 		for(int i = 0; i < sideSize; i++) {
 			//System.out.println("> Entering extractRows");
@@ -115,14 +117,14 @@ extends FitnessFunction {
 			errorCounter += countErrors(rows[i]);
 			System.out.println("R:"+countErrors(rows[i]));
 			
-			columns[i] = extractColumns(i, sideSize, rows);
+			columns[i] = extractColumns(i, sideSize, aux);
 			System.out.println("<"+Arrays.toString(columns[i]));
 			columns[i] = quickSort( columns[i], 0, columns[i].length - 1);
 			System.out.println(">"+Arrays.toString(columns[i]));
 			errorCounter += countErrors(columns[i]); 
 			System.out.println("C:"+countErrors(columns[i]));
 			
-			blocks[i] = extractBlocks(i, sideSize, rows);
+			blocks[i] = extractBlocks(i, sideSize, aux);
 			System.out.println("<"+Arrays.toString(blocks[i]));
 			blocks[i] = quickSort( blocks[i], 0, blocks[i].length - 1);
 			System.out.println(">"+Arrays.toString(blocks[i]));
@@ -159,18 +161,21 @@ extends FitnessFunction {
 	}
 	
 	int [] extractBlocks(int i, int sideSize, int[][] fullSudoku){
+		
 		int res[] = new int[sideSize];
+		int aux = 0;
 		int sqr_sideSize = (int) Math.floor(Math.sqrt(sideSize));
-		for (int j = (i / sqr_sideSize)*sqr_sideSize; j < sqr_sideSize; j++){
-			for(int k = (i % sqr_sideSize)*sqr_sideSize; k < sqr_sideSize; k++){
-				res[j*sqr_sideSize + k] = fullSudoku[j][k];
+		for (int j = (int) (i / sqr_sideSize)*sqr_sideSize; j < (i / sqr_sideSize)*sqr_sideSize + sqr_sideSize; j++){
+			System.out.println("j: "+(j/sqr_sideSize)*sqr_sideSize);
+			for(int k = (int) (i % sqr_sideSize)*sqr_sideSize; k < (i % sqr_sideSize)*sqr_sideSize + sqr_sideSize; k++){
+				res[aux++] = fullSudoku[j][k];
 			}
 		}
 		return res;
 	}
 	
-	private static int[] quickSort(int A[], int L, int R) {
-
+	private static int[] quickSort(int B[], int L, int R) {
+		  int [] A = B.clone();
 		  int pivot=A[L];
 		  int i=L;
 		  int j=R;
