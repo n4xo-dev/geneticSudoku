@@ -81,7 +81,7 @@ public class SudokuMain {
 			conf.setChromosomePool(new ChromosomePool());
 
 			conf.addGeneticOperator(new SudokuCrossoverOperator(conf));	
-			conf.addGeneticOperator(new SudokuMutationOperator(conf, 0));
+			conf.addGeneticOperator(new SudokuMutationOperator(conf, 12));
 		}
 		catch (InvalidConfigurationException e) {
 			throw new RuntimeException(
