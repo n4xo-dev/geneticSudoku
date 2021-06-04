@@ -36,7 +36,7 @@ public class SudokuMain {
 	 */
 	private static final int MAX_ALLOWED_EVOLUTIONS = 1000;
 
-	public static final int MAX_BOUND = 20000000;
+	public static final int MAX_BOUND = Integer.MAX_VALUE;
 
 	/**
 	 * Executes the genetic algorithm to solve the sudoku. The solution will then
@@ -57,16 +57,6 @@ public class SudokuMain {
 		// most common settings.
 		// -------------------------------------------------------------
 		Configuration conf = new Configuration();
-		conf.setPreservFittestIndividual(true);
-		// Set the fitness function we want to use. We construct it with
-		// the sudoku passed as an array in to this method.
-		// ---------------------------------------------------------
-		int[] sudokuArr = sudoku.getPuzzle();
-		FitnessFunction myFunc =
-				new SudokuFitnessFunction(sudoku);
-		conf.setFitnessFunction(myFunc);
-
-
 		try {
 			conf.setBreeder(new GABreeder());
 			conf.setRandomGenerator(new StockRandomGenerator());
@@ -79,16 +69,25 @@ public class SudokuMain {
 			conf.setKeepPopulationSizeConstant(true);
 			conf.setFitnessEvaluator(new DefaultFitnessEvaluator());
 			conf.setChromosomePool(new ChromosomePool());
-
+			
 			conf.addGeneticOperator(new SudokuCrossoverOperator(conf));	
 			conf.addGeneticOperator(new SudokuMutationOperator(conf, 12));
-		}
-		catch (InvalidConfigurationException e) {
+		} catch (InvalidConfigurationException e) {
 			throw new RuntimeException(
 					"Fatal error: DefaultConfiguration class could not use its "
 							+ "own stock configuration values. This should never happen. "
 							+ "Please report this as a bug to the JGAP team.");
 		}
+		conf.setPreservFittestIndividual(true);
+		// Set the fitness function we want to use. We construct it with
+		// the sudoku passed as an array in to this method.
+		// ---------------------------------------------------------
+		int[] sudokuArr = sudoku.getPuzzle();
+		FitnessFunction myFunc =
+				new SudokuFitnessFunction(sudoku);
+		conf.setFitnessFunction(myFunc);
+
+
 
 
 		sudoku.getSudoku();
@@ -170,7 +169,7 @@ public class SudokuMain {
 			
 		}
 		
-		System.out.println(Arrays.toString(conf.getGeneticOperators().toArray()));
+//		System.out.println(Arrays.toString(conf.getGeneticOperators().toArray()));
 		Genotype population = new Genotype(conf, new Population(conf, initialArray));
 		
 		// Create random initial population of Chromosomes.
@@ -178,6 +177,7 @@ public class SudokuMain {
 		// surpass the max number of iterations the population keeps evolving.
 		// ---------------------------------------------------------------
 		for (int i = 0; i < MAX_ALLOWED_EVOLUTIONS; i++) {
+			System.out.println(i+" iteration");
 			if (resultIsValid(population.getFittestChromosome()))
 				break;
 			population.evolve();
@@ -216,7 +216,7 @@ public class SudokuMain {
 	 * @version 1.0
 	 */
 	public static void main(String[] args) {
-
+		System.out.print("NO");
 		try {
 			solveSudoku(new Sudoku());
 		}

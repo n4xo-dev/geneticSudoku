@@ -31,7 +31,8 @@ extends FitnessFunction {
 
 	final Sudoku sudoku;
 
-	public static final int MAX_BOUND = 20000000;
+	public static final int MAX_BOUND = Integer.MAX_VALUE;
+	public static final double BASE = 253083374.88015303;
 
 	//private static final double ZERO_DIFFERENCE_FITNESS = Math.sqrt(MAX_BOUND); // What is this?
 
@@ -91,7 +92,7 @@ extends FitnessFunction {
 			// we arbitrarily work with half of the maximum fitness as basis for non-
 			// optimal solutions (concerning volume difference)
 			// 466560 max penalty value for 72 empty cells
-			return a_maxFitness / 2 - (penalty * penalty * 10);
+			return a_maxFitness - BASE*Math.sqrt(penalty);
 		}
 	}
 	
@@ -115,21 +116,21 @@ extends FitnessFunction {
 			//System.out.println("> Entering extractRows");
 			rows[i] = quickSort( rows[i], 0, rows[i].length - 1);
 			errorCounter += countErrors(rows[i]);
-			System.out.println("R:"+countErrors(rows[i]));
+//			System.out.println("R:"+countErrors(rows[i]));
 			
 			columns[i] = extractColumns(i, sideSize, aux);
-			System.out.println("<"+Arrays.toString(columns[i]));
+//			System.out.println("<"+Arrays.toString(columns[i]));
 			columns[i] = quickSort( columns[i], 0, columns[i].length - 1);
-			System.out.println(">"+Arrays.toString(columns[i]));
+//			System.out.println(">"+Arrays.toString(columns[i]));
 			errorCounter += countErrors(columns[i]); 
-			System.out.println("C:"+countErrors(columns[i]));
+//			System.out.println("C:"+countErrors(columns[i]));
 			
 			blocks[i] = extractBlocks(i, sideSize, aux);
-			System.out.println("<"+Arrays.toString(blocks[i]));
+//			System.out.println("<"+Arrays.toString(blocks[i]));
 			blocks[i] = quickSort( blocks[i], 0, blocks[i].length - 1);
-			System.out.println(">"+Arrays.toString(blocks[i]));
+//			System.out.println(">"+Arrays.toString(blocks[i]));
 			errorCounter += countErrors(blocks[i]);
-			System.out.println("B:"+countErrors(blocks[i]));
+//			System.out.println("B:"+countErrors(blocks[i]));
 		}
 		System.out.println("\tT:"+errorCounter);
 		penalty = (double) errorCounter;
@@ -166,7 +167,7 @@ extends FitnessFunction {
 		int aux = 0;
 		int sqr_sideSize = (int) Math.floor(Math.sqrt(sideSize));
 		for (int j = (int) (i / sqr_sideSize)*sqr_sideSize; j < (i / sqr_sideSize)*sqr_sideSize + sqr_sideSize; j++){
-			System.out.println("j: "+(j/sqr_sideSize)*sqr_sideSize);
+//			System.out.println("j: "+(j/sqr_sideSize)*sqr_sideSize);
 			for(int k = (int) (i % sqr_sideSize)*sqr_sideSize; k < (i % sqr_sideSize)*sqr_sideSize + sqr_sideSize; k++){
 				res[aux++] = fullSudoku[j][k];
 			}

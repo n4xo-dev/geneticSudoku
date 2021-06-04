@@ -24,11 +24,13 @@ public class SudokuCrossoverOperator extends CrossoverOperator{
 
 	public SudokuCrossoverOperator() throws InvalidConfigurationException {
 		super();
+		System.out.println("CrossoverOperator created");
 		init();
 	}
 	
 	public SudokuCrossoverOperator(final Configuration conf) throws InvalidConfigurationException {
 		super(conf);
+		System.out.println("CrossoverOperator created");
 		init();
 	}
 
@@ -82,6 +84,7 @@ public class SudokuCrossoverOperator extends CrossoverOperator{
 			index2 = generator.nextInt(size);
 			IChromosome chrom1 = a_population.getChromosome(index1);
 			IChromosome chrom2 = a_population.getChromosome(index2);
+			System.out.println("Chromosomes = "+chrom1.getFitnessValue()+":"+chrom2.getFitnessValue());
 			// Verify that crossover is allowed.
 			// ---------------------------------
 			if (!isXoverNewAge() && chrom1.getAge() < 1 && chrom2.getAge() < 1) {
